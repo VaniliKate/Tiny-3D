@@ -4,16 +4,19 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    private Animator Anim;
     private CharacterController controller;
     private Vector3 playerVelocity;
     private bool groundedPlayer;
     [SerializeField]private float playerSpeed = 2.0f;
     [SerializeField]private float jumpHeight = 1.0f;
     private float gravityValue = -9.81f;
+    public bool canRun= false;
 
     private void Start()
     {
         controller = GetComponent<CharacterController>();
+        Anim = GetComponentInChildren<Animator>();
     }
 
     void Update()
@@ -30,12 +33,27 @@ public class PlayerMovement : MonoBehaviour
         if (move != Vector3.zero)
         {
             gameObject.transform.forward = move;
+            canRun = true;
+        }
+        else
+        {
+            canRun = false;
         }
 
+        switch(canRun)
+        {
+            case true:
+            Anim.SetBool("Run",true);
+                break;
+            case false:
+            Anim.SetBool("Run",false);
+                break;
+        }
         // Changes the height position of the player..
         if (Input.GetButtonDown("Jump") && groundedPlayer)
         {
             playerVelocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravityValue);
+            Anim.SetTrigger("Jump");
         }
 
         playerVelocity.y += gravityValue * Time.deltaTime;
