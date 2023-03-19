@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class AiController : MonoBehaviour
 {
+    private CharacterController controller;
+    private Vector3 playerVelocity;
+    private bool groundedPlayer;
+    private float gravityValue = -9.81f;
     Animator Animator;
     public GameObject Target;
     Vector3 targetPoint;
@@ -24,6 +28,7 @@ public class AiController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        controller = GetComponent<CharacterController>();
         Animator = GetComponentInChildren<Animator>();
         StartPos = transform.position;
     }
@@ -31,6 +36,11 @@ public class AiController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        groundedPlayer = controller.isGrounded;
+        if (groundedPlayer && playerVelocity.y < 0)
+        {
+            playerVelocity.y = 0f;
+        }
         //assign enemy target
         targetPoint = player.transform.position;
 
@@ -59,6 +69,7 @@ public class AiController : MonoBehaviour
             if(Vector3.Distance(transform.position, targetPoint)<DistanceToChase)
             {
                 FaceTarget();
+                Animator.SetBool("Run",true);
                 transform.position = Vector3.MoveTowards(transform.position,Target.transform.position,Movespeed*Time.deltaTime);
             }
           
@@ -69,22 +80,27 @@ public class AiController : MonoBehaviour
                 targetPoint = StartPos;
                 FaceTarget();
                 transform.position = Vector3.MoveTowards(transform.position,StartPos,Movespeed*Time.deltaTime);
+                if(Vector3.Distance(transform.position,targetPoint)<.1f)
+                {
+                    Animator.SetBool("Run",false);
+                }
             }
             else
             {
                 targetPoint = player.transform.position;
             }
 
-            if(Dist < DistanceToStop)
+            if(Dist < DistanceToStop && !isChase)
             {
                 //enemy stops and becomes idle
                 isChase = false;
-
+                Animator.SetBool("Idle",true);
             }
             else
             {
                 //enemy continues following
                 isChase = true;
+                Animator.SetBool("Idle",false);
             }
 
             if(Dist < DistanceToAttack)
@@ -106,6 +122,7 @@ public class AiController : MonoBehaviour
 
             }
         }
+        playerVelocity.y += gravityValue * Time.deltaTime;
     }
 
     void FaceTarget()
