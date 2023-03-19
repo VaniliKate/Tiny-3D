@@ -56,8 +56,12 @@ public class AiController : MonoBehaviour
         }
         else
         {
-            FaceTarget();
-            transform.position = Vector3.MoveTowards(transform.position,Target.transform.position,Movespeed*Time.deltaTime);
+            if(Vector3.Distance(transform.position, targetPoint)<DistanceToChase)
+            {
+                FaceTarget();
+                transform.position = Vector3.MoveTowards(transform.position,Target.transform.position,Movespeed*Time.deltaTime);
+            }
+          
             if(Dist > DistanceToLose)
             {
                 //enemy stops chsing
@@ -90,6 +94,7 @@ public class AiController : MonoBehaviour
                 if(IsAttack)
                 {
                     //attack player
+                    //Animator.SetLayerWeight(1,1);
 
                 }
 
@@ -98,6 +103,7 @@ public class AiController : MonoBehaviour
             {
                 //stops attacking player
                 IsAttack = false;
+
             }
         }
     }
