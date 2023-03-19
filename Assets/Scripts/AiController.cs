@@ -36,6 +36,7 @@ public class AiController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         groundedPlayer = controller.isGrounded;
         if (groundedPlayer && playerVelocity.y < 0)
         {
@@ -57,12 +58,10 @@ public class AiController : MonoBehaviour
                 //transform.LookAt(Target.transform.position);
                 FaceTarget();
             }
-            else
-            {
-                //enemy returns to original pos
-                transform.position = Vector3.MoveTowards(transform.position,StartPos,Movespeed*Time.deltaTime);
+            else{
+                isChase = false;
+                return;
             }
-           
         }
         else
         {
@@ -71,6 +70,11 @@ public class AiController : MonoBehaviour
                 FaceTarget();
                 Animator.SetBool("Run",true);
                 transform.position = Vector3.MoveTowards(transform.position,Target.transform.position,Movespeed*Time.deltaTime);
+            }
+            else
+            {
+                isChase= false;
+                transform.position = Vector3.MoveTowards(transform.position,StartPos,Movespeed*Time.deltaTime);
             }
           
             if(Dist > DistanceToLose)
@@ -83,35 +87,52 @@ public class AiController : MonoBehaviour
                 if(Vector3.Distance(transform.position,targetPoint)<.1f)
                 {
                     Animator.SetBool("Run",false);
+                    Animator.SetBool("Idle",true);
+                    Movespeed = 0;
+                }
+                else{
+                    Movespeed = 5;
                 }
             }
             else
             {
+                isChase =true;
                 targetPoint = player.transform.position;
+                Animator.SetBool("Idle",true);
             }
 
-            if(Dist < DistanceToStop && !isChase)
+            if(Dist < DistanceToStop && isChase)
             {
                 //enemy stops and becomes idle
                 isChase = false;
-                Animator.SetBool("Idle",true);
+               // Animator.SetBool("Idle",true);
+                Animator.SetBool("Run",true);
             }
             else
             {
                 //enemy continues following
                 isChase = true;
                 Animator.SetBool("Idle",false);
+                //Animator.SetBool("Run",true);
             }
 
             if(Dist < DistanceToAttack)
             {
                 //Enemy Attacks
                 IsAttack = true;
+                isChase = true;
                 if(IsAttack)
                 {
+                    Animator.SetBool("Run",true);
                     //attack player
-                    //Animator.SetLayerWeight(1,1);
+                    Animator.SetLayerWeight(1,1);
+                    Animator.SetTrigger("Attack");
 
+                }
+                else
+                {
+                    //Animator.SetLayerWeight(0,1);
+                    Animator.SetBool("Idle",true);
                 }
 
             }
@@ -119,6 +140,7 @@ public class AiController : MonoBehaviour
             {
                 //stops attacking player
                 IsAttack = false;
+                isChase = true;
 
             }
         }
