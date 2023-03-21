@@ -10,7 +10,7 @@ public class AiController : MonoBehaviour
     private float gravityValue = -9.81f;
     Animator Animator;
     public GameObject Target;
-    Vector3 targetPoint;
+    public Vector3 targetPoint;
     public bool isChase = false;
     [Space]
     public bool IsAttack = false;
@@ -55,6 +55,7 @@ public class AiController : MonoBehaviour
             {
                 //begins to chase player
                 isChase = true;
+                Animator.SetBool("Run",true);
                 //transform.LookAt(Target.transform.position);
                 FaceTarget();
             }
@@ -65,7 +66,7 @@ public class AiController : MonoBehaviour
         }
         else
         {
-            if(Vector3.Distance(transform.position, targetPoint)<DistanceToChase)
+            if(Vector3.Distance(transform.position, targetPoint) < DistanceToChase)
             {
                 FaceTarget();
                 Animator.SetBool("Run",true);
@@ -77,7 +78,7 @@ public class AiController : MonoBehaviour
                 transform.position = Vector3.MoveTowards(transform.position,StartPos,Movespeed*Time.deltaTime);
             }
           
-            if(Dist > DistanceToLose)
+            if(Vector3.Distance(transform.position, targetPoint) > DistanceToLose)
             {
                 //enemy stops chsing
                 isChase = false;
@@ -87,8 +88,46 @@ public class AiController : MonoBehaviour
                 if(Vector3.Distance(transform.position,targetPoint)<.1f)
                 {
                     Animator.SetBool("Run",false);
-                    Animator.SetBool("Idle",true);
                     Movespeed = 0;
+                }
+                else{
+                    Movespeed = 5;
+                    Animator.SetBool("Idle",false);
+                }
+            }
+            else
+            {
+                isChase =true;
+                targetPoint = player.transform.position;
+                Animator.SetBool("Run",false);
+            }
+
+            if(Vector3.Distance(transform.position,targetPoint) < DistanceToStop )
+            {
+                //enemy stops and becomes idle
+                isChase = false;
+                Animator.SetBool("Run",false);
+                Movespeed = 0;
+            }
+            else
+            {
+                //enemy continues following
+                isChase = true;
+                Animator.SetBool("Run",true);
+                Movespeed = 5;
+            }
+
+            if(Vector3.Distance(transform.position,targetPoint) < DistanceToAttack)
+            {
+                //Enemy Attacks
+                isChase = false;
+                IsAttack = true;
+                Animator.SetBool("Run",false);
+                if(IsAttack)
+                {
+                    //attack player
+                    Movespeed = 0;
+                    Animator.SetLayerWeight(1,1);
                 }
                 else{
                     Movespeed = 5;
@@ -96,52 +135,10 @@ public class AiController : MonoBehaviour
             }
             else
             {
-                isChase =true;
-                targetPoint = player.transform.position;
-                Animator.SetBool("Idle",true);
-            }
-
-            if(Dist < DistanceToStop && isChase)
-            {
-                //enemy stops and becomes idle
-                isChase = false;
-               // Animator.SetBool("Idle",true);
-                Animator.SetBool("Run",true);
-            }
-            else
-            {
-                //enemy continues following
-                isChase = true;
-                Animator.SetBool("Idle",false);
-                //Animator.SetBool("Run",true);
-            }
-
-            if(Dist < DistanceToAttack)
-            {
-                //Enemy Attacks
-                IsAttack = true;
-                isChase = true;
-                if(IsAttack)
-                {
-                    Animator.SetBool("Run",true);
-                    //attack player
-                    Animator.SetLayerWeight(1,1);
-                    Animator.SetTrigger("Attack");
-
-                }
-                else
-                {
-                    //Animator.SetLayerWeight(0,1);
-                    Animator.SetBool("Idle",true);
-                }
-
-            }
-            else
-            {
                 //stops attacking player
                 IsAttack = false;
                 isChase = true;
-
+                Animator.SetBool("Run",true);
             }
         }
         playerVelocity.y += gravityValue * Time.deltaTime;
